@@ -1,68 +1,69 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "utils/info.c"
+
 #define MAX_INPUT 200
 
-void help()
-{
-    printf("\n");
-    printf("========================================\n");
-    printf("          CipherForge Commands          \n");
-    printf("========================================\n\n");
 
-    printf("GENERAL COMMANDS\n");
-    printf("----------------------------------------\n");
-    printf("  help                 Display help menu\n");
-    printf("  clear                Clear terminal screen\n");
-    printf("  exit                 Exit CipherForge\n\n");
 
-    printf("CRYPTOGRAPHY COMMANDS\n");
-    printf("----------------------------------------\n");
-    printf("  encrypt              Encrypt plaintext data\n");
-    printf("  decrypt              Decrypt encrypted data\n");
-    printf("  hash                 Generate data hash\n");
-    printf("  keygen               Generate encryption keys\n");
-    printf("  benchmark            Test algorithm performance\n\n");
+void MENU_crypto(void) {
 
-    printf("FILE OPERATIONS\n");
-    printf("----------------------------------------\n");
-    printf("  encrypt-file         Encrypt a file\n");
-    printf("  decrypt-file         Decrypt a file\n");
-    printf("  inspect              View file encryption details\n\n");
-
-    printf("EXAMPLES\n");
-    printf("----------------------------------------\n");
-    printf("  encrypt aes          Encrypt using AES\n");
-    printf("  decrypt rsa          Decrypt using RSA\n");
-    printf("  hash sha256 file.txt Generate SHA-256 hash\n\n");
-
-    printf("Type 'exit' to close CipherForge.\n\n");
 }
 
-void openShell(){
-  
+void EXIT_SHELL(void) {
+  printf("exitting CypherForge..");
+}
+
+typedef struct
+{
+  const char *name;
+  void (*handler)(void);
+} Command;
+
+void openShell()
+{
+
+  Command commands[] = {
+      {"help", showhelp},
+      {"crypto", MENU_crypto}
+      {"exit", EXIT_SHELL},
+  };
+
+  const int NUM_COMMANDS = sizeof(commands) / sizeof(commands[0]);
+
   char INPUT[MAX_INPUT];
   char BUFFER[MAX_INPUT];
 
-
-  while (1){
-    printf("CipherForge > ");  
+  while (1)
+  {
+    printf("CipherForge > ");
     fgets(INPUT, sizeof(INPUT), stdin);
     INPUT[strcspn(INPUT, "\n")] = '\0';
-    
-    if (strcmp(strlwr(INPUT), "help") == 0) {
-      help();
-    } else if (strcmp(strlwr(INPUT), "cryptography") == 0) {
-      printf("cryptography");
 
-    } else if (strcmp(strlwr(INPUT), "exit") == 0) {
-      printf("exiting");
-      break;
+    strlwr(INPUT);
 
-    } else {
-      printf("INVALID COMMAND");
+    int found = 0;
+
+    for (int i = 0; i < NUM_COMMANDS; i++)
+    {
+
+      if (strcmp(INPUT, commands[i].name) == 0)
+      {
+        commands[i].handler();
+        found = 1;
+
+        if (strcmp(INPUT, "exit") == 0)
+        {
+          return;
+        }
+        break;
+      }
     }
-    
-    
+
+    if (!found)
+    {
+      printf("Unknown command. Type 'help'. \n");
+    }
   }
 }

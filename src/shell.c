@@ -1,69 +1,135 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
-#include "utils/info.c"
+#include "utils/helps.c"
 
 #define MAX_INPUT 200
 
+typedef struct State State;
 
-
-void MENU_crypto(void) {
-
-}
-
-void EXIT_SHELL(void) {
-  printf("exitting CypherForge..");
-}
+typedef void (*CommandHandler)(State **);
 
 typedef struct
 {
-  const char *name;
-  void (*handler)(void);
+    const char *name;
+    CommandHandler handler;
 } Command;
 
-void openShell()
+struct State
 {
+    const char *prompt;
+    Command *commands;
+    int commandCount;
+};
 
-  Command commands[] = {
-      {"help", showhelp},
-      {"crypto", MENU_crypto}
-      {"exit", EXIT_SHELL},
-  };
+void enterCrypto(State **state);
+void back(State **state);
+void encrypt(State **state);
+void decrypt(State **state);
+void exitShell(State **state);
+void openShell(void);
 
-  const int NUM_COMMANDS = sizeof(commands) / sizeof(commands[0]);
+State RootState;
+State CryptoState;
 
-  char INPUT[MAX_INPUT];
-  char BUFFER[MAX_INPUT];
-
-  while (1)
-  {
-    printf("CipherForge > ");
-    fgets(INPUT, sizeof(INPUT), stdin);
-    INPUT[strcspn(INPUT, "\n")] = '\0';
-
-    strlwr(INPUT);
-
-    int found = 0;
-
-    for (int i = 0; i < NUM_COMMANDS; i++)
+void strlower(char *str)
+{
+    while (*str)
     {
+        *str = (char)tolower((unsigned char)*str);
+        str++;
+    }
+}
 
-      if (strcmp(INPUT, commands[i].name) == 0)
-      {
-        commands[i].handler();
-        found = 1;
+void enterCrypto(State **state)
+{
+    *state = &CryptoState;
+}
 
-        if (strcmp(INPUT, "exit") == 0)
+void back(State **state)
+{
+    *state = &RootState;
+}
+
+void encrypt(State **state)
+{
+    (void)state;
+    
+}
+
+void decrypt(State **state)
+{
+    (void)state;
+
+}
+
+void exitShell(State **state)
+{
+    *state = NULL;
+}
+
+Command rootCommands[] =
+{
+    {"help", showRootHelp},
+    {"crypto", enterCrypto},
+    {"exit", exitShell},
+};
+
+Command cryptoCommands[] =
+{
+    {"help", showCryptoHelp},
+    {"encrypt", encrypt},
+    {"decrypt", decrypt},
+    {"back", back},
+};
+
+State RootState =
+{
+    "CipherForge",
+    rootCommands,
+    sizeof(rootCommands) / sizeof(rootCommands[0])
+};
+
+State CryptoState =
+{
+    "CipherForge/crypto",
+    cryptoCommands,
+    sizeof(cryptoCommands) / sizeof(cryptoCommands[0])
+};
+
+void openShell(void)
+{
+    char input[MAX_INPUT];
+    State *current = &RootState;
+
+    while (current != NULL)
+    {
+        printf("%s> ", current->prompt);
+
+        if (!fgets(input, sizeof(input), stdin))
+            break;
+
+        input[strcspn(input, "\n")] = '\0';
+        strlower(input);
+
+        int found = 0;
+
+        for (int i = 0; i < current->commandCount; i++)
         {
-          return;
+            if (strcmp(input, current->commands[i].name) == 0)
+            {
+                current->commands[i].handler(&current);
+                found = 1;
+                break;
+            }
         }
-        break;
-      }
+
+        if (!found)
+        {
+            printf("Unknown command.\n");
+        }
     }
 
-    if (!found)
-    {
-      printf("Unknown command. Type 'help'. \n");
-    }
-  }
+    printf("Goodbye!\n");
 }

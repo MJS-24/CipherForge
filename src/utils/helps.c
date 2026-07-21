@@ -1,5 +1,6 @@
 #include <stdio.h>
-typedef struct State State;
+#include "../state.h"
+
 
 void showRootHelp(State **state)
 {

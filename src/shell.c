@@ -2,33 +2,17 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "utils/helps.c"
+#include "shell.h"
+#include "state.h"
+#include "utils/helps.h"
 
 #define MAX_INPUT 200
-
-typedef struct State State;
-
-typedef void (*CommandHandler)(State **);
-
-typedef struct
-{
-    const char *name;
-    CommandHandler handler;
-} Command;
-
-struct State
-{
-    const char *prompt;
-    Command *commands;
-    int commandCount;
-};
 
 void enterCrypto(State **state);
 void back(State **state);
 void encrypt(State **state);
 void decrypt(State **state);
 void exitShell(State **state);
-void openShell(void);
 
 State RootState;
 State CryptoState;

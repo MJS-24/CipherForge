@@ -1,5 +1,5 @@
-#include "banner.c"
-#include "shell.c"
+#include "src/banner.c"
+#include "src/shell.h"
 
 int main() {
   printBanner();
